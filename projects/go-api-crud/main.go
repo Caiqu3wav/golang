@@ -2,16 +2,21 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+    "github.com/steebchen/prisma-client-go"
+	"log"
 )
 
 func main() {
+	client := prisma.NewClient()
+	err := client.Prisma.Connect()
+	if err != nil {
+		log.Fatal("Erro ao conectar db", err)
+	}
+	defer client.Prisma.Disconnect()
+
 	server := gin.Default()
 
-	server.GET("/ping", func(ctx *gin.Context){
-		ctx.JSON(200, gin.H {
-			"message": "pong",
-		})
-	})
+	SetupProductRoutes(r, client)
 
 	server.Run(":8000")
 }
