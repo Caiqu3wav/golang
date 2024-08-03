@@ -1,12 +1,11 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
-	"log"
+	"go-api-crud/db"
+	"go-api-crud/router"
 )
 
 func main() {
-	
-
-	server.Run(":8000")
+	db.InitPostgredDB()
+	router.InitRouter().Run()
 }

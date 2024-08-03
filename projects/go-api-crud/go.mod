@@ -1,4 +1,4 @@
-module go-api
+module go-api-crud
 
 go 1.22.2
 
