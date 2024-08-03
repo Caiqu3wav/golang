@@ -44,3 +44,48 @@ func InitPostgredDB() {
 
 	fmt.Println("Database connection established successfully!")
 }
+
+func CreateProduct(product *Product) (*Product, error) {
+	product.ID = uuid.New().String()
+	res := db.Create(&product)
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	return product, nil
+}
+
+func GetProduct(id string) (*Product, error) {
+	var product Product
+	res := db.First(&product, "id = ?", id)
+	if res.RowsAffected == 0 {
+		return nil, errors.New(fmt.Sprintf("Movie of id %s not found", id))
+	}
+	return &product, nil
+}
+
+func GetProducts() ([]*Product, error) {
+	var products []*Product
+	res := db.Find(&products)
+	if res.Error != nil {
+		return nil, errors.New("No products found")
+	}
+	return products, nil
+}
+
+func UpdateProduct(product *Product) (*Product, error) {
+	var product2Update Product
+	result := db.Model(&product2Update).Where("id = ?", product.ID).Updates(product)
+	if result.RowsAffected == 0 {
+		return &product2Update, errors.New("movie not updated")
+	}
+	return product, nil
+}
+
+func DeleteProduct(id string) error {
+	var deletedProduct Product
+	result := db.Where("id = ?", id).Delete(&deletedProduct)
+	if result.RowsAffected == 0 {
+		return errors.New("movie not deleted")
+	}
+	return nil
+}
