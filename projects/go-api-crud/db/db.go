@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log"
 	"os"
-
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 	"github.com/google/uuid"
-	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
    "github.com/joho/godotenv"
 )
@@ -31,12 +31,17 @@ func InitPostgredDB() {
 	dbUrl := os.Getenv("DATABASE_URL")
 
 	var err error
-	db, err = gorm.Open("postgres", dbUrl)
+	db, err = gorm.Open(postgres.Open(dbUrl), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Failed to connect db:", err)
 	}
 
-	if err := db.DB().Ping(); err != nil {
+	sqlDB, err := db.DB() // Aqui pegamos a conexão *sql.DB
+	if err != nil {
+		log.Fatal("Failed to get DB connection:", err)
+	}
+
+	if err := sqlDB.Ping(); err != nil { // Agora usamos o método Ping corretamente
 		log.Fatal("Cannot ping db:", err)
 	}
 
@@ -58,7 +63,7 @@ func GetProduct(id string) (*Product, error) {
 	var product Product
 	res := db.First(&product, "id = ?", id)
 	if res.RowsAffected == 0 {
-		return nil, errors.New(fmt.Sprintf("Movie of id %s not found", id))
+		return nil, errors.New(fmt.Sprintf("Product of id %s not found", id))
 	}
 	return &product, nil
 }
@@ -76,7 +81,7 @@ func UpdateProduct(product *Product) (*Product, error) {
 	var product2Update Product
 	result := db.Model(&product2Update).Where("id = ?", product.ID).Updates(product)
 	if result.RowsAffected == 0 {
-		return &product2Update, errors.New("movie not updated")
+		return &product2Update, errors.New("product not updated")
 	}
 	return product, nil
 }
@@ -85,7 +90,7 @@ func DeleteProduct(id string) error {
 	var deletedProduct Product
 	result := db.Where("id = ?", id).Delete(&deletedProduct)
 	if result.RowsAffected == 0 {
-		return errors.New("movie not deleted")
+		return errors.New("product not deleted")
 	}
 	return nil
 }
